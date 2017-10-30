@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include<SDL/SDL.h>
@@ -99,7 +100,7 @@ else if((egalite(mat[csy][csx],mat[csy2][csx2-1])==1)
                  swap(csy,csx,csx2,csy2);
 destroy(csx2,csy2,csx2-1,csy2,csx2-2,csy2);
 
-  }
+  }else reswap(csy,csx,csx2,csy2);
 
 }
 //2eme cas
@@ -146,7 +147,7 @@ else if((egalite(mat[csy][csx],mat[csy2+1][csx2])==1)
                  swap(csy,csx,csx2,csy2);
 destroy(csx2,csy2,csx2,csy2+1,csx2,csy2+2);
 
-  }
+  }else reswap(csy,csx,csx2,csy2);
 
 }
 //3eme cas
@@ -190,14 +191,14 @@ else if((egalite(mat[csy][csx],mat[csy2][csx2-1])==1)
                  swap(csy,csx,csx2,csy2);
 destroy(csx2,csy2,csx2-1,csy2,csx2+1,csy2);
 
-  }
+  }else reswap(csy,csx,csx2,csy2);
 
 
 }
 // 4eme cas
 if (csy2==csy+1&&csx2==csx)
   {
-   if(egalite(mat[csy][csy],mat[csy2][csx2+1])==1
+   if((egalite(mat[csy][csy],mat[csy2][csx2+1])==1)
    &&(egalite(mat[csy][csy],mat[csy2][csx2-1])==1))
     {ok=1;
 
@@ -212,7 +213,7 @@ else if((egalite(mat[csy][csx],mat[csy2+1][csx2])==1)
                  swap(csy,csx,csx2,csy2);
 destroy(csx2,csy2,csx2,csy2+1,csx2,csy2+2);
 
-  }
+  }//not responding -___- in top left botton
 else if((egalite(mat[csy][csx],mat[csy2][csx2+1])==1)
 &&(egalite(mat[csy][csx],mat[csy2][csx2+2])==1))
   {ok=1;
@@ -235,9 +236,7 @@ else if((egalite(mat[csy][csx],mat[csy2][csx2-1])==1)
 
                  swap(csy,csx,csx2,csy2);
      destroy(csx2,csy2,csx2-1,csy2,csx2+1,csy2+1);
-
-
-  }
+  }else reswap(csy,csx,csx2,csy2);
 
 }
 
@@ -303,13 +302,18 @@ SDL_FillRect(img.img,NULL,SDL_MapRGB(img.img->format,0,255,0));
 void swap(int csy,int csx,int csx2,int csy2)
 {char temp[20];
 SDL_Rect pos1,pos2;
+
 pos2.y=csy2*80; pos1.y=csy*80;
 pos2.x=csx2*80; pos1.x=csx*80;
+
 strcpy(temp,mat[csy2][csx2].noimg);
 SDL_FreeSurface(mat[csy2][csx2].img);
+
 mat[csy2][csx2].img=SDL_LoadBMP(mat[csy][csx].noimg);
+
 strcpy(mat[csy2][csx2].noimg,mat[csy][csx].noimg);
 SDL_FreeSurface(mat[csy][csx].img);
+
 mat[csy][csx].img=SDL_LoadBMP(temp);
 strcpy(mat[csy][csx].noimg,temp);
 
@@ -327,16 +331,22 @@ void destroy(int csx2,int csy2,int x3,int y3,int x4,int y4)
 fillrect(mat[y3][x3]); fillrect(mat[y4][x4]);
 fillrect(mat[csy2][csx2]);
 pos3.x=x3*80;   pos3.y=y3*80;   pos4.x=x4*80;    pos4.y=y4*80;
-pos2.x=0; pos2.y=0;
+pos2.x=csx2*80; pos2.y=csy2*80;
 
+SDL_BlitSurface(mat[csy2][csx2].img,NULL,ecran,&pos2);
 
 SDL_BlitSurface(mat[y3][x4].img,NULL,ecran,&pos3);
 SDL_BlitSurface(mat[y4][x4].img,NULL,ecran,&pos4);
 SDL_Flip(ecran);
 
 }
+void reswap(int csy,int csx,int csx2,int csy2)
+{
+swap(csy,csx,csx2,csy2);
 
+swap(csy2,csx2,csx,csy);
 
+}
 
 
 
