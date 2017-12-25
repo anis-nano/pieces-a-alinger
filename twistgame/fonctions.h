@@ -1,4 +1,4 @@
-#include"fonctions1.h"
+
 
 enum {E=6};
 typedef struct
@@ -16,8 +16,6 @@ char noimg[20];
 rect mat[9][10];
 
 enum {H=6};
-
-
 
 
 
@@ -48,9 +46,11 @@ strcpy (mat[i][j].noimg,tab[k].ch);
 }
 }
 
-int egalite(rect img,rect img2)
+int egalite(int csy,int csx,int csy2,int csx2)
 {
-if(strcmp(img.noimg,img2.noimg)==0) return 1;
+if(csy2<0 || csy2>9)return 0;
+if(csx2<0 || csx2>10)return 0;
+if(strcmp(mat[csy][csx].noimg,mat[csy2][csx2].noimg)==0) return 1;
 return 0;
 }
 
@@ -86,6 +86,32 @@ SDL_Flip(ecran);
 SDL_Delay(500);
 }
 
+void swap_destroy(int csy,int csx,int csx2,int csy2)
+{
+char temp[20]; void change();
+SDL_Rect pos1,pos2;
+
+pos2.y=csy2*80; pos1.y=csy*80;
+pos2.x=csx2*80; pos1.x=csx*80;
+
+strcpy(temp,mat[csy2][csx2].noimg);
+SDL_FreeSurface(mat[csy2][csx2].img);
+
+mat[csy2][csx2].img=SDL_LoadBMP(mat[csy][csx].noimg);
+
+strcpy(mat[csy2][csx2].noimg,mat[csy][csx].noimg);
+SDL_FreeSurface(mat[csy][csx].img);
+
+mat[csy][csx].img=SDL_LoadBMP(temp);
+strcpy(mat[csy][csx].noimg,temp);
+
+
+SDL_BlitSurface(mat[csy][csx].img,NULL,ecran,&pos1);
+//destroy the second argument
+fillrect(mat[csy2][csx2]);
+SDL_BlitSurface(mat[csy2][csx2].img,NULL,ecran,&pos2);
+SDL_Flip(ecran);
+}
 
 
 void reswap(int csy,int csx,int csx2,int csy2)
@@ -333,7 +359,7 @@ return e;
 //still beta not tested yet
 void destroy4(int csx2,int csy2,int x3,int y3,int x4,int y4,int x5,int y5,nomimage tab[])
 {
-    int i;
+    int i;   int  recherche();void decalage4();
     SDL_Rect pos2,pos3,pos4,pos5;void decalage();
     fillrect(mat[y3][x3]); fillrect(mat[y4][x4]);
     fillrect(mat[csy2][csx2]); fillrect(mat[y5][x5]);
@@ -344,16 +370,14 @@ void destroy4(int csx2,int csy2,int x3,int y3,int x4,int y4,int x5,int y5,nomima
 
 SDL_BlitSurface(mat[y5][x5].img,NULL,ecran,&pos5);
 
-
-
 SDL_BlitSurface(mat[y3][x3].img,NULL,ecran,&pos3);
-
-
 
 SDL_BlitSurface(mat[y4][x4].img,NULL,ecran,&pos4);
 
-i=recherche(mat[csy2][csx2].noimg,tab);
 
+
+i=recherche(mat[csy2][csx2].noimg,tab);
+SDL_FreeSurface(mat[csy2][csx2].img);
 mat[csy2][csx2].img=SDL_LoadBMP(tab[i+7].ch);  strcpy(mat[csy2][csx2].noimg,tab[i+7].ch);
 
 SDL_BlitSurface(mat[csy2][csx2].img,NULL,ecran,&pos2);
@@ -365,37 +389,34 @@ SDL_Delay(400);
 int recherche(char ch[20],nomimage tab[])
 {
     int i=0;
-    while((i<=6)&&(strcmp(ch,tab[i].ch)==1) )
-    {
-        i++;
+    for(i=0;i<=6;i++)
+    {if(strcmp(ch,tab[i].ch)==0) return i;
+
     }
-    return i;
+
+
 }
 
 
 
-
-
-
 //Still in beta version not tested
-void decalage4(int csx2,int csy2,int x3,int y3,int x4,int y4,int y5,int x5,nomimage tab[])
+void decalage4(int csx2,int csy2,int x3,int y3,int x4,int y4,int x5,int y5,nomimage tab[])
 {int max=max4(csy2,y3,y4,y5);void decalage();
 //1er cas decalage horizontal
+printf("%d",max);
 if((csx2!=x3&&csx2!=x4&&csx2!=x5)&&(csy2==y3&&csy2==y4&&csy2==y5)) decalage(x3,y3,x4,y4,x5,y5,tab);
 
-else if(csx2==x3&&csx2==x4&&csx2==x5)
+else if((csx2==x3)&&(csx2==x4)&&(csx2==x5))
 {SDL_Rect pos;
+
 if(max==csy2) decalage(x3,y3,x4,y4,x5,y5,tab);
 else
 {
-fillrect(mat[csy2][csx2]);
-pos.x=csx2*80; pos.y=csy2*80;
-SDL_BlitSurface(mat[csy2][csx2].noimg,ecran,NULL,&pos);
-strcpy(mat[max][x3].noimg,mat[csy2][csx2].noimg);
-SDL_FreeSurface(mat[max][x3].img);
-mat[max][x3].img=SDL_LoadBMP(mat[csy2][csx2].noimg);
-pos.y=max*80; pos.x=x3*csx2;
-SDL_BlitSurface(mat[max][csx2].img,ecran,NULL,&pos);
+
+swap_destroy(max,x3,csx2,csy2);
+
+
+SDL_Delay(1000);
 if(max==y3)
 decalage(csx2,csy2,x4,y4,x5,y5,tab);
 else if(max==y4) decalage(csx2,csy2,x3,y3,x5,y5,tab);
@@ -421,20 +442,17 @@ void destroy5(int csx2,int csy2,int x3,int y3,int x4,int y4,int x5,int y5,int x6
 
     pos2.x=csx2*80; pos2.y=csy2*80;  pos5.x=x5*80;  pos5.y=y5*80; pos6.x=x6*80;
 
+//blite with green
 SDL_BlitSurface(mat[y5][x5].img,NULL,ecran,&pos5);
-
-
-
 SDL_BlitSurface(mat[y3][x3].img,NULL,ecran,&pos3);
-
-
-
 SDL_BlitSurface(mat[y4][x4].img,NULL,ecran,&pos4);
 SDL_BlitSurface(mat[x6][y6].img,NULL,ecran,&pos6);
 
+
+
 i=recherche(mat[csy2][csx2].noimg,tab);
 
-mat[csy2][csx2].img=SDL_LoadBMP(tab[i+7].ch);  strcpy(mat[csy2][csx2].noimg,tab[i+7].ch);
+mat[csy2][csx2].img=SDL_LoadBMP(tab[i+14].ch);  strcpy(mat[csy2][csx2].noimg,tab[i+14].ch);
 
 SDL_BlitSurface(mat[csy2][csx2].img,NULL,ecran,&pos2);
 
@@ -443,13 +461,13 @@ SDL_Delay(400);
     decalage5(csx2,csy2,x3,y3,x4,y4,x5,y5,x6,y6,tab);
 }
 
-//not tested yet
-void decalage4_v(int x3,int y3,int x4,int y4,int x5,int y5,int y6,int x6,nomimage tab[])
+//tested
+void decalage4_v(int x3,int y3,int x4,int y4,int x5,int y5,int x6,int y6,nomimage tab[])
 {//decalage vertical
 int cy3=0,cy4=1,cy5=2,cy6=3,cx3=x3,cx4=x4,cx5=x5,cx6=x6,k; //copy of the cordi;
 SDL_Rect pos;
 int sum=y3+y4+y5+y6;
-while(y3>2||y4>2||y5>2)
+while(y3>3||y4>3||y5>3)
 {
   SDL_FreeSurface(mat[y3][x3].img);
   SDL_FreeSurface(mat[y4][x4].img);
@@ -466,7 +484,7 @@ mat[y5][x5].img=SDL_LoadBMP(mat[y5-4][x5].noimg);
 strcpy(mat[y5][x5].noimg,mat[y5-4][x5].noimg);
 
 mat[y6][x6].img=SDL_LoadBMP(mat[y6-4][x6].noimg);
-strcpy(mat[y5][x5].noimg,mat[y6-4][x6].noimg);
+strcpy(mat[y6][x6].noimg,mat[y6-4][x6].noimg);
 
 
 pos.x=x3*80 ;pos.y=y3*80;
@@ -481,15 +499,7 @@ SDL_BlitSurface(mat[y5][x5].img,NULL,ecran,&pos);
 pos.x=x6*80 ;pos.y=y6*80;
 SDL_BlitSurface(mat[y6][x6].img,NULL,ecran,&pos);
 
-
-
-
-
 SDL_Flip(ecran);
-
-
-
-
 
 
 y3=y3-4;y4=y4-4;y5=y5-4;y6=y6-4;
@@ -621,8 +631,8 @@ while(y3>0)
 
 mat[y3][x3].img=SDL_LoadBMP(mat[y3-1][x3].noimg);        strcpy(mat[y3][x3].noimg,mat[y3-1][x3].noimg);
 mat[y4][x4].img=SDL_LoadBMP(mat[y4-1][x4].noimg);        strcpy(mat[y4][x4].noimg,mat[y4-1][x4].noimg);
-mat[y3][x3].img=SDL_LoadBMP(mat[y5-1][x5].noimg);        strcpy(mat[y5][x5].noimg,mat[y5-1][x5].noimg);
-mat[y3][x3].img=SDL_LoadBMP(mat[y6-1][x6].noimg);        strcpy(mat[y6][x6].noimg,mat[y6-1][x6].noimg);
+mat[y5][x5].img=SDL_LoadBMP(mat[y5-1][x5].noimg);        strcpy(mat[y5][x5].noimg,mat[y5-1][x5].noimg);
+mat[y6][x6].img=SDL_LoadBMP(mat[y6-1][x6].noimg);        strcpy(mat[y6][x6].noimg,mat[y6-1][x6].noimg);
 
 
 //affichage des images dans l'ecran
@@ -648,10 +658,7 @@ SDL_Delay(400);
 
 
 }
-
-
-
-
+//affections les  4 derniers cases
 k=rand()%7;
 mat[y3][x3].img=SDL_LoadBMP(tab[k].ch);  strcpy(mat[y3][x3].noimg,tab[k].ch);
 k=rand()%7;
@@ -675,45 +682,372 @@ SDL_BlitSurface(mat[y5][x5].img,NULL,ecran,&pos);
 
 pos.x=x6*80 ;pos.y=y6*80;
 SDL_BlitSurface(mat[y6][x6].img,NULL,ecran,&pos);
-
+SDL_Flip(ecran);
 
 }
 
 //2éme cas decalage vertical
 else
-{int max=max5(csy2,y3,y4,y5,y6);SDL_Rect pos;
+{int max=max5(csy2,y3,y4,y5,y6);SDL_Rect pos,pos2;
 if (max==csy2) decalage4_v( x3, y3, x4, y4, x5,  y5, x6, y6, tab);
 else{
-fillrect(mat[csy2][csx2]);
-pos.x=csx2*80; pos.y=csy2*80;
-SDL_BlitSurface(mat[csy2][csx2].noimg,ecran,NULL,&pos);
-strcpy(mat[max][x3].noimg,mat[csy2][csx2].noimg);
-SDL_FreeSurface(mat[max][x3].img);
-mat[max][x3].img=SDL_LoadBMP(mat[csy2][csx2].noimg);
-pos.y=max*80; pos.x=x3*csx2;
-SDL_BlitSurface(mat[max][csx2].img,ecran,NULL,&pos);
+
+
+
+swap_destroy(max,x3,csx2,csy2);
+
+SDL_Delay(4000);
+
+
 if(max==y3) decalage4_v(csy2,csx2,x4,y4,x5,y5,x6,y6,tab);
-else if(max==y4)decalage4_v(x3,y3,csx2,csy2,x5,y5,x6,y6,tab);
+else if(max==y4) decalage4_v(x3,y3,csx2,csy2,x5,y5,x6,y6,tab);
 else if(max==y5) decalage4_v(x3,y3,x4,y4,csx2,csy2,x6,y6,tab);
 else if(max==y6) decalage4_v(x3,y3,x4,y4,x5,y5,csy2,csx2,tab);
 
+}
 
+}
+
+}
+
+//still beta not tested
+//cas de csy2-1 ,csy2+1
+int verf_1_1(int csx,int csy,int csx2,int csy2,nomimage tab[])
+{
+  if(egalite(csy,csx,csy2-2,csx2)==1)
+   {  if(egalite(csy,csx,csy2-3,csx2)==1)
+   {
+   swap(csy,csx,csx2,csy2);
+   destroy5(csx2,csy2,csx2,csy2-1,csx2,csy2+1,
+   csx2,csy2-2,csx2,csy-3,tab);
+   return 1;
+   }
+   swap(csy,csx,csx2,csy2);
+   destroy4(csx2,csy2,csx2,csy2-1,csx2,csy2+1,
+   csx2,csy2-2,tab);
+   return 1;
+   }else if(egalite(csy,csx,csy2+2,csx2)==1)
+   {if(egalite(csy,csx,csy2+3,csx2)==1)
+   {swap(csy,csx,csx2,csy2);
+   destroy5(csx2,csy2,csx2,csy2-1,csx2,csy2+1,
+   csx2,csy2+2,csx2,csy+3,tab);
+   return 1;
+   }
+   swap(csy,csx,csx2,csy2);
+   destroy4(csx2,csy2,csx2,csy2-1,csx2,csy2+1,
+   csx2,csy2+2,tab);
+   return 1;
+   }
+   return 0;
+
+}
+//cas csx2-1 ,csx2-2
+int verf_1_2(int csx,int csy,int csx2,int csy2,nomimage tab[])
+{
+   if(egalite(csy,csx,csy2,csx2-3)==1)
+  {
+      if(egalite(csy,csx,csy2,csx2-4)==1)
+      {
+      swap(csy,csx,csx2,csy2);
+      destroy5(csx2,csy2,csx2-1,csy2,csx2-2,csy2,csx2-3,csy2,
+      csx2-4,csy2,tab);
+      return 1;
+      }
+      swap(csy,csx,csx2,csy2);
+      destroy4(csx2,csy2,csx2-1,csy2,csx2-2,csy2,csx2-3,csy2,tab);
+      return 1;
+  }else return 0;
+
+}
+//cas csy2-1,csy2-2
+int verf_1_3(int csx,int csy,int csx2,int csy2,nomimage tab[])
+{
+       // cas 4 cases
+   if (egalite(csy,csx,csy2-3,csx2)==1)
+   {
+   {if(egalite(csy,csx,csy2-4,csx2)==1)
+   //5 cases
+   swap(csy,csx,csx2,csy2);
+   destroy5(csx2,csy2,csx2,csy2-1,csx2,csy2-2,csx2,csy2-3,csx2
+   ,csy2-4,tab);
+
+   return 1;
+   }
+   swap(csy,csx,csx2,csy2);
+   destroy4(csx2,csy2,csx2,csy2-1,csx2,csy2-2,csx2,csy2-3,tab);
+   return 1;
+   }else return 0;
+
+
+}
+
+//cas csy2+1,csy2+2
+int verf_1_4(int csx,int csy,int csx2,int csy2,nomimage tab[])
+{
+    if(egalite(csy,csx,csy2+3,csx2)==1)
+    {if(egalite(csy,csx,csy2+4,csx2)==1)
+    {//appele destroy 5
+    swap(csy,csx,csx2,csy2);
+    destroy5(csx2,csy2,csx2,csy2+1,csx2,csy2+2,csx2,csy2+3,csx2,
+    csy2+4,tab);
+    return 1;
+    }else
+    swap(csy,csx,csx2,csy2);
+    destroy4(csx2,csy2,csx2,csy2+1,csx2,csy2+2,csx2,csy2+3,tab);
+    return 1;
+    }else return 0;
+
+}
+
+//cas csx2+1,csx2+2
+int verf_1_5(int csx,int csy,int csx2,int csy2,nomimage tab[])
+{
+ if(egalite(csy,csx,csy2,csx2+3)==1)
+ {
+    if(egalite(csy,csx,csy2,csx2+4)==1)
+     {
+     swap(csy,csx,csx2,csy2);
+     destroy5(csx2,csy2,csx2+1,csy2,csx2+2,csy2,csx2+3,csy2,
+     csx2+4,csy2,tab);
+      return 1;
+     }else
+   { //apelle
+    swap(csy,csx,csx2,csy2);
+    destroy4(csx2,csy2,csx2+1,csy2,csx2+2,csy2,csx2+3,csy2,tab);
+    return 1;
+    }
+ }else return 0;
+
+}
+//cas csx2+1,csx2-1
+int verf_1_6(int csx,int csy,int csx2,int csy2,nomimage tab[])
+{
+    if(egalite(csy,csx,csy2,csx2+2)==1)
+     {if(egalite(csy,csx,csy2,csx2+3)==1)
+     {
+     swap(csy,csx,csx2,csy2);
+     destroy5(csx2,csy2,csx2+1,csy2,csx2-1,csy2,csx2+2,
+     csy2,csx2+3,csy2,tab);
+     return 1;
+     }
+     swap(csy,csx,csx2,csy2);
+     destroy4(csx2,csy2,csx2+1,csy2,csx2-1,csy2,csx2+2,
+    csy2,tab);
+    return 1;
+     }else if(egalite(csy,csx,csy2,csx2-2)==1)
+     {if(egalite(csy,csx,csy2,csx2-3)==1)
+     {
+     swap(csy,csx,csx2,csy2);
+     destroy5(csx2,csy2,csx2+1,csy2,csx2-1,csy2,csx2-2,
+     csy2,csx2-3,csy2,tab);
+     return 1;
+     }
+     swap(csy,csx,csx2,csy2);
+     destroy4(csx2,csy2,csx2+1,csy2,csx2-1,csy2,csx2-2,csy2,tab);
+     return 1;
+     }
+return 0;
 
 
 }
 
 
+//
+void verification_global(int csx,int csy,int csx2,int csy2,nomimage tab[],int i)
+{int d=0,ok;
+///////////////////////1er cas
+if(csy2==csy&&csx2==abs(csx-1))
+     {
+if((d==0)&&(egalite(csy,csx,csy2-1,csx2)==1)
+&&(egalite(csy,csx,csy2+1,csx2)==1))
+    {ok=1;d=1;
+                if(verf_1_1(csx,csy,csx2,csy2,tab)==0)
+               {swap(csy,csx,csx2,csy2);
+                destroy(csx2,csy2,csx2,csy2-1,csx2,csy2+1,tab);
+               }
+}
+else if((d==0)&&(egalite(csy,csx,csy2+1,csx2)==1)
+&&(egalite(csy,csx,csy2+2,csx2)==1))
+    {ok=1;d=1;
+       if(verf_1_4(csx,csy,csx2,csy2,tab)==0)
+      {
+      swap(csy,csx,csx2,csy2);
+      destroy(csx2,csy2,csx2,csy2+1,csx2,csy2+2,tab);
+      }
+    }
+else if((d==0)&&(egalite(csy,csx,csy2-1,csx2)==1)
+&&(egalite(csy,csx,csy2-2,csx2)==1))
+   {ok=1;d=1;
+   if(verf_1_3(csx,csy,csx2,csy2,tab)==0)
+     {
+     swap(csy,csx,csx2,csy2);
+     destroy(csx2,csy2,csx2,csy2-1,csx2,csy2-2,tab);
+     }
+   }
+else if((d==0)&&(egalite(csy,csx,csy2,csx2-1)==1)
+&&(egalite(csy,csx,csy2,csx2-2)==1))
+  {ok=1;d=1;
+        if(verf_1_2(csx,csy,csx2,csy2,tab)==0)
+        {
+        swap(csy,csx,csx2,csy2);
+        destroy(csx2,csy2,csx2-1,csy2,csx2-2,csy2,tab);
+        }
+  }else if(i==1) reswap(csy,csx,csx2,csy2);
 
+}
+
+//////////////////////2eme cas
+
+if (csy2==csy&&csx2==abs(csx+1))
+{ if((d==0)&&(egalite(csy,csx,csy2+1,csx2)==1)
+&&(egalite(csy,csx,csy2+2,csx2)==1))
+   {ok=1;d=1;
+               if(verf_1_4(csx,csy,csx2,csy2,tab)==0)
+                { swap(csy,csx,csx2,csy2);
+                    destroy(csx2,csy2,csx2,csy2+1,csx2,csy2+2,tab);
+                }
+                                                                     }
+
+
+
+
+else if((d==0)&&(egalite(csy,csx,csy2-1,csx2)==1)
+&&(egalite(csy,csx,csy2-2,csx2)==1))
+  {ok=1;d=1;
+         if(verf_1_3(csx,csy,csx2,csy2,tab)==0)
+           { swap(csy,csx,csx2,csy2);
+                     destroy(csx2,csy2,csx2,csy2-1,csx2,csy2-2,tab);
+           }
+  }
+
+
+
+else if((d==0)&&(egalite(csy,csx,csy2,csx2+1)==1)
+&&(egalite(csy,csx,csy2,csx2+2)==1))
+  {ok=1;d=1;
+if(verf_1_5(csx,csy,csx2,csy2,tab)==0)
+     {
+     swap(csy,csx,csx2,csy2);
+     destroy(csx2,csy2,csx2+1,csy2,csx2+2,csy2,tab);
+     }
+  }
+else if((d==0)&&(egalite(csy,csx,csy2-1,csx2)==1)
+&&(egalite(csy,csx,csy2+1,csx2)==1))
+  {ok=1;d=1;
+   if(verf_1_1(csx,csy,csx2,csy2,tab)==0)
+   {  swap(csy,csx,csx2,csy2);
+    destroy(csx2,csy2,csx2,csy2-1,csx2,csy2+1,tab);
+   }
+
+  }
+else if((d==0)&&(egalite(csy,csx,csy2+1,csx2)==1)
+&&(egalite(csy,csx,csy2+2,csx2)==1))
+  {ok=1;d=1;
+if(verf_1_4(csx,csy,csx2,csy2,tab)==0)
+ {
+    swap(csy,csx,csx2,csy2);
+    destroy(csx2,csy2,csx2,csy2+1,csx2,csy2+2,tab);
+  }
+  }else if(i==1) reswap(csy,csx,csx2,csy2);
+
+}
+////////////////////////3eme cas
+if (csy2==abs(csy-1)&&csx2==csx)
+{if((d==0)&&egalite(csy,csx,csy2,csx2+1)==1
+&&(egalite(csy,csx,csy2,csx2-1)==1))
+  {ok=1;d=1;
+if(verf_1_6(csx,csy,csx2,csy2,tab)==0)
+   {
+    swap(csy,csx,csx2,csy2);
+    destroy(csx2,csy2,csx2+1,csy2,csx2-1,csy2,tab);
+    }
+  }
+else if((d==0)&&(egalite(csy,csx,csy2-1,csx2)==1)
+&&(egalite(csy,csx,csy2-2,csx2)==1))
+  {ok=1;d=1;
+if(verf_1_3(csx,csy,csx2,csy2,tab)==0)
+    {    swap(csy,csx,csx2,csy2);
+         destroy(csx2,csy2,csx2,csy2-1,csx2,csy2-2,tab);
+    }
+  }
+else if((d==0)&&(egalite(csy,csx,csy2,csx2+1)==1)
+&&(egalite(csy,csx,csy2,csx2+2)==1))
+  {ok=1;d=1;
+if(verf_1_5(csx,csy,csx2,csy2,tab)==0)
+      {   swap(csy,csx,csx2,csy2);
+          destroy(csx2,csy2,csx2+1,csy2,csx2+2,csy2,tab);
+      }
+  }
+else if((d==0)&&(egalite(csy,csx,csy2,csx2-1)==1)
+&&(egalite(csy,csx,csy2,csx2-2)==1))
+  {ok=1;d=1;
+if(verf_1_2(csx,csy,csx2,csy2,tab)==0)
+       {swap(csy,csx,csx2,csy2);
+        destroy(csx2,csy2,csx2-1,csy2,csx2-2,csy2,tab);
+        }
+  }
+else if((d==0)&&(egalite(csy,csx,csy2,csx2-1)==1)
+&&(egalite(csy,csx,csy2,csx2+1)==1))
+  {ok=1;d=1;
+        if(verf_1_6(csx,csy,csx2,csy2,tab)==0)
+           {  swap(csy,csx,csx2,csy2);
+              destroy(csx2,csy2,csx2-1,csy2,csx2+1,csy2,tab);
+           }
+  }else if(i==1)reswap(csy,csx,csx2,csy2);
+
+
+}
+//////////////////////////// 4eme cas
+if (csy2==csy+1&&csx2==csx)
+  {
+   if((d==0)&&(egalite(csy,csx,csy2,csx2+1)==1)
+   &&(egalite(csy,csx,csy2,csx2-1)==1))
+    {ok=1;d=1;
+          if(verf_1_6(csx,csy,csx2,csy2,tab)==0)
+            {
+            swap(csy,csx,csx2,csy2);
+            destroy(csx2,csy2,csx2+1,csy2,csx2-1,csy2,tab);
+            }
+    }
+else if((d==0)&&(egalite(csy,csx,csy2+1,csx2)==1)
+&&(egalite(csy,csx,csy2+2,csx2)==1))
+  {ok=1;d=1;
+    if(verf_1_4(csx,csy,csx2,csy2,tab)==0)
+    {  swap(csy,csx,csx2,csy2);
+     destroy(csx2,csy2,csx2,csy2+1,csx2,csy2+2,tab);
+    }
+  }//not responding -___- in top left botton
+else if((d==0)&&(egalite(csy,csx,csy2,csx2+1)==1)
+&&(egalite(csy,csx,csy2,csx2+2)==1))
+  {ok=1;d=1;
+    if(verf_1_5(csx,csy,csx2,csy2,tab)==0)
+    {
+     swap(csy,csx,csx2,csy2);
+     destroy(csx2,csy2,csx2+1,csy2,csx2+2,csy2,tab);
+    }
+  }
+else if((d==0)&&(egalite(csy,csx,csy2,csx2-1)==1)
+&&(egalite(csy,csx,csy2,csx2-2)==1))
+  {ok=1;d=1;
+if(verf_1_2(csx,csy,csx2,csy2,tab)==0)
+       {swap(csy,csx,csx2,csy2);
+        destroy(csx2,csy2,csx2-1,csy2,csx2-2,csy2,tab);
+                                                       }
+  }
+else if((d==0)&&(egalite(csy,csx,csy2,csx2-1)==1)
+&&(egalite(csy,csx,csy2,csx2+1)==1))
+   {ok=1; d=1;
+       if(verf_1_6(csx,csy,csx2,csy2,tab)==0)
+         {swap(csy,csx,csx2,csy2);
+          destroy(csx2,csy2,csx2-1,csy2,csx2+1,csy2+1,tab);
+                                                            }
+
+     }else if(i==1) reswap(csy,csx,csx2,csy2);
+
+}
+
+  if((d==0)&&(i==0)) verification_global(csx2,csy2,csx,csy,tab,1);
 
 
 
 }
-
-
-
-
-
-
-
-}
-
