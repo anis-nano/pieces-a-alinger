@@ -1,0 +1,18 @@
+# depslib dependency file v1.0
+1518779334 source:/home/nano_clay-fs/codeblocksproj/twist4pro/main.c
+	<stdio.h>
+	<stdlib.h>
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<string.h>
+	"fonctions.h"
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_mixer.h>
+	<sys/time.h>
+
+1518779577 /home/nano_clay-fs/codeblocksproj/twist4pro/fonctions.h
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_mixer.h>
+
+1512025581 /home/nano_clay-fs/codeblocksproj/twist4pro/fonctions1.h
+
